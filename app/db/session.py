@@ -1,17 +1,27 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+
+from sqlmodel import SQLModel
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"  # Update this URL with your database connection string
+sqlite_name = "db.sqlite3"
+sqlite_url = f"sqlite+aiosqlite:///{sqlite_name}"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
 
-# Dependency to get DB session
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+engine:AsyncEngine = create_async_engine(sqlite_url,echo=True)
+# Configura un creador de sesiones asíncronas
+async_session_maker = sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False
+)
+
+# Inicializar la base de datos
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+
+# Función de dependencia para obtener la sesión
+async def get_session() -> AsyncSession:
+    async with async_session_maker() as session:
+        yield session
+
