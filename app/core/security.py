@@ -19,7 +19,7 @@ def create_access_token(data: dict, expires_token: int = None):
     except Exception as e:
         raise HTTPException(status_code=401, detail="Error creating access token")
 
-def decode_access_token(token: str):
+def decode_access_token(token: HTTPBearer):
     """Decodifica un token JWT."""
     try:
         payload = jwt.decode(token.credentials, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
@@ -30,37 +30,21 @@ def decode_access_token(token: str):
         raise HTTPException(status_code=401, detail="Invalid token")
     
 
-async def is_autenticated(request: Request, token: str = Depends(bearer)):
+def has_permission(permission:str,token: HTTPBearer):
     payload = decode_access_token(token)
-    request.state.user = payload
+    if permission not in payload.get("permissions", []):
+        raise HTTPException("no tiene  acceso")  # Validar permisos
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return payload
 
-def get_current_user(request: Request):
-    if "user" not in request.state:
-        raise HTTPException(status_code=401, detail="User not found")
-    return request.state.user
+def is_autenticated(token: HTTPBearer = Depends(bearer)):
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return payload
 
-def allow_anonymous(request: Request=None):
-    request.state.user = None
-    request.state.is_anonymous = True
-def permission_required(permission: str,request: Request=None):
-    def decorator(func):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            user = request.state.user
-            print(user)
-            # Usamos Depends para inyectar el usuario y verificar los permisos
-            user = kwargs.get("current_user")
-            if user is None:
-                raise HTTPException(status_code=401, detail="User not found")
-            
-            # Verificamos si el usuario tiene el permiso
-            if permission not in user["permissions"]:
-                raise HTTPException(status_code=403, detail="You do not have permission to perform this action")
-            
-            # Si tiene el permiso, ejecutamos la función del endpoint
-            return await func(*args, **kwargs)
-        return wrapper
-    return decorator
+def permission_dependency(permission: str):
+    def dependency(token: HTTPBearer = Depends(bearer)):
+        has_permission(permission, token)  # Llama tu función
+    return dependency
