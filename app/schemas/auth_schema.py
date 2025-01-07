@@ -7,6 +7,7 @@ class LoginRequestSchema(BaseModel):
     password: str
 
 
-class LoginResponseSchema(LoginRequestSchema):
+class LoginResponseSchema(BaseModel):
     user_name: str
     email: str
+    token: str

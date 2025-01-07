@@ -11,9 +11,7 @@ def customize_openapi(func: Callable[..., dict]) -> Callable[..., dict]:
             for _, param in method_item.items():
                 responses = param.get("responses")
                 # remove default 422 - the default 422 schema is HTTPValidationError
-                if "422" in responses and responses["422"]["content"][
-                    "application/json"
-                ]["schema"]["$ref"].endswith("HTTPValidationError"):
+                if "422" in responses and responses["422"]["content"]["application/json"]["schema"]["$ref"].endswith("HTTPValidationError"):
                     del responses["422"]
         return res
 
@@ -21,6 +19,31 @@ def customize_openapi(func: Callable[..., dict]) -> Callable[..., dict]:
 
 
 doc_responses = {
+    200:{
+        "description": "Operación exitosa",
+        "content": {
+            "application/json": {
+                "example": {
+                    "success": True,
+                    "data": {
+                        "user_name": "john.doe",
+                        "email": "john.doe@localhost",
+                        "token": "eyJ0eXAi.8XhQ4zZQ.v9vz5"
+                        
+                        },
+                        "error": {
+                        "message": "Message of the error",
+                        "type": "BusinessLogicError",
+                        "errors": [
+                            {
+                                "type": "string",
+                                "loc": [],
+                                "msg": "string",
+                                "input": 1,
+                            }
+                        ],
+                    }}}}
+    },
     400: {
         "description": "Validaciones de negocio fallidas",
         "content": {
@@ -44,6 +67,34 @@ doc_responses = {
             }
         },
     },
+    401: {
+        "description": "No autorizado",
+        "content": {
+            "application/json": {
+                "example": {
+                    "success": False,
+                    "data": None,
+                    "error": {
+                        "message": "Message of the error",
+                        "type": "BusinessLogicError",
+                    },
+                }
+            }
+        },
+    },
+    403: {
+        "description": "No permitido",
+        "content": {
+            "application/json": {
+                "example": {
+                    "success": False,
+                    "data": None,
+                    "error": {
+                        "message": "Message of the error",
+                        "type": "BusinessLogicError",
+                    },
+                }
+    }}},
     404: {
         "description": "Recurso no encontrado",
         "content": {

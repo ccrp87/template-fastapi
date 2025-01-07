@@ -7,5 +7,5 @@ T = TypeVar("T")
 class ResponseSchema(GenericModel, Generic[T]):
     success: bool = True
     data: Optional[T] = None
-    error: Optional[Sequence] = None
+    errors: Optional[Sequence] = None
     status_code: int = 201

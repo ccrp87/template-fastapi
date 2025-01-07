@@ -30,21 +30,18 @@ def decode_access_token(token: HTTPBearer):
         raise HTTPException(status_code=401, detail="Invalid token")
     
 
-def has_permission(permission:str,token: HTTPBearer):
-    payload = decode_access_token(token)
-    if permission not in payload.get("permissions", []):
-        raise HTTPException("no tiene  acceso")  # Validar permisos
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    return payload
-
 def is_autenticated(token: HTTPBearer = Depends(bearer)):
     payload = decode_access_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return payload
 
-def permission_dependency(permission: str):
+def has_permission(permission: str):
     def dependency(token: HTTPBearer = Depends(bearer)):
-        has_permission(permission, token)  # Llama tu función
+        payload = decode_access_token(token)
+        if permission not in payload.get("permissions", []):
+            raise HTTPException("no tiene  acceso")  # Validar permisos
+        if not payload:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return payload
     return dependency

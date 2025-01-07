@@ -7,7 +7,7 @@ from app.db.session import init_db
 from app.routers.users_router import routerUser
 from app.routers.auth_router import routerAuth
 from app.core.config_open_api import customize_openapi, doc_responses
-
+from datetime import datetime
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,7 +47,7 @@ prefix: str = "/api/v1"  # Prefix for all routes
 app.include_router(router=routerUser, prefix=prefix, responses=doc_responses)
 app.include_router(router=routerAuth, prefix=prefix, responses=doc_responses)
 
-@app.get("/")
-async def root():
-    return {"message": "Welcome to FastAPI Template"}
+@app.get("/", tags=["Test"],responses={200: {"description": "Welcome message", "content": {"application/json": {"example": {"message": "Welcome to FastAPI Template"}}}}})
+async def test_api():
+    return {"message": "Welcome to FastAPI Template", "success": True,"date":datetime.now()}
 

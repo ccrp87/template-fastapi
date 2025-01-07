@@ -41,7 +41,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
             "error": {
                 "message": "An unexpected error occurred.",
                 "type": "UnhandledError",
-                "errors": exc.errors,
+                "errors": exc.args,
             },
         },
     )
