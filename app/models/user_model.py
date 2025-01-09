@@ -8,6 +8,7 @@ class User(SQLModel, table=True):
     username: str
     phone:str
     email: str
+    address: str
     hashed_password: str
     is_active: bool = Field(default=True)
     created_at: datetime = Field()
